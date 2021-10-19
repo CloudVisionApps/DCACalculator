@@ -63,6 +63,7 @@ class DCACalculator
         }
 
 
+        // This calc perfect
         if ($assetLastPeriodPrice > $assetStartPeriodPrice) {
             $totalAssetIncreasePercent = abs(1 - ($assetLastPeriodPrice / $assetStartPeriodPrice)) * 100;
         } else {
