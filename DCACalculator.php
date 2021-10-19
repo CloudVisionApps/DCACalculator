@@ -3,7 +3,6 @@
 
 class DCACalculator
 {
-    public $investments = [];
     public $investmentCycle = 'daily';
     public $investmentAmount = 20;
 
@@ -55,17 +54,15 @@ class DCACalculator
                 $totalAssetIncreaseAmount = ($totalAssetIncreaseAmount - abs($periodAssetIncreaseAmount));
             }
 
-            $this->makeInvestment($currentPeriod, $this->investmentAmount);
+            $totalInvestmentAmount = ($totalInvestmentAmount + $this->investmentAmount);
         }
-
-        foreach ($this->investments as $investment) {
-            $totalInvestmentAmount = ($totalInvestmentAmount + $investment['investmentAmount']);
-        }
-
 
         // This calc perfect
         if ($assetLastPeriodPrice > $assetStartPeriodPrice) {
             $totalAssetIncreasePercent = abs(1 - ($assetLastPeriodPrice / $assetStartPeriodPrice)) * 100;
+
+            $totalProfitAmount = ($totalInvestmentAmount / 100) * $totalAssetIncreasePercent;
+
         } else {
             $totalAssetIncreasePercent = (($assetLastPeriodPrice / $assetStartPeriodPrice) - 1) * 100;
         }
@@ -81,13 +78,6 @@ class DCACalculator
                 'totalAssetIncreaseAmount'=>$totalAssetIncreaseAmount . '$'
             ]
         ];
-    }
-
-    public function makeInvestment($period, $amount)
-    {
-        $period['investmentAmount'] = $amount;
-
-        $this->investments[] = $period;
     }
 
     public function getPeriods()
