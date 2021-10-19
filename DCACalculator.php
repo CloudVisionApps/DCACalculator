@@ -93,24 +93,25 @@ class DCACalculator
     {
         $periods = [];
         if ($this->investmentCycle == 'daily') {
-            $periods[] = [
-                'date'=>1,
-                'assetPrice'=> 100
-            ];
-            $periods[] = [
-                'date'=>2,
-                'assetPrice'=> 300
-            ];
-            $periods[] = [
-                'date'=>3,
-                'assetPrice'=> 500
-            ];
-            $periods[] = [
-                'date'=>4,
-                'assetPrice'=> 200
-            ];
+            foreach ($this->getDatesByMonthAndYear('10', 2021) as $date) {
+                $periods[] = [
+                    'date' => $date,
+                    'assetPrice' => rand(100,999)
+                ];
+            }
         }
         return $periods;
+    }
+
+    public function getDatesByMonthAndYear($month, $year) {
+        $num = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $datesMonth = array();
+        for ($i = 1; $i <= $num; $i++) {
+            $mktime = mktime(0, 0, 0, $month, $i, $year);
+            $date = date("Y-m-d", $mktime);
+            $datesMonth[$i] = $date;
+        }
+        return $datesMonth;
     }
 }
 
