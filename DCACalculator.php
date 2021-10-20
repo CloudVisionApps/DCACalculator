@@ -19,63 +19,59 @@ class DCACalculator
 
     public function calculate()
     {
+        $periodInvestments = [];
+
         $totalInvestmentAmount = 0.00;
-
-        $totalProfitPercent = 0;
-        $totalProfitAmount = 0.00;
-
-        $totalAssetIncreasePercent = 0;
-        $totalAssetIncreaseAmount = 0;
+        $totalAccumulatedAssetQuantity = 0.00;
 
         $periods = $this->getPeriods();
 
         $assetStartPeriodPrice = $periods[0]['assetPrice'];
         $assetLastPeriodPrice = end($periods)['assetPrice'];
 
-        foreach ($periods as $i=>$currentPeriod) {
+        foreach ($periods as $currentPeriod) {
 
-            $previousPeriod = false;
-            if (isset($periods[$i-1])) {
-                $previousPeriod = $periods[$i - 1];
-            }
-
-            $periodAssetIncreasePercent = 0;
-            $periodAssetIncreaseAmount = 0;
-
-            if ($previousPeriod) {
-                $periodAssetIncreaseAmount = ($currentPeriod['assetPrice'] - $previousPeriod['assetPrice']);
-                $periodAssetIncreasePercent = ((1 - ($previousPeriod['assetPrice'] / $currentPeriod['assetPrice'])) * 100);
-            }
-
-            // Add period asset amount
-            if ($periodAssetIncreaseAmount >= 0) {
-                $totalAssetIncreaseAmount = ($totalAssetIncreaseAmount + $periodAssetIncreaseAmount);
-            } else {
-                $totalAssetIncreaseAmount = ($totalAssetIncreaseAmount - abs($periodAssetIncreaseAmount));
-            }
+            $accumulatedAssetQuantity = ($this->investmentAmount / $currentPeriod['assetPrice']);
+            $periodInvestments[] = [
+                'date' => $currentPeriod['date'],
+                'assetPrice' => $currentPeriod['assetPrice'],
+                'accumulatedAssetQuantity' => $accumulatedAssetQuantity,
+                'investmentAssetAmount' => $this->investmentAmount
+           ];
+            $totalAccumulatedAssetQuantity = $totalAccumulatedAssetQuantity + $accumulatedAssetQuantity;
 
             $totalInvestmentAmount = ($totalInvestmentAmount + $this->investmentAmount);
         }
 
-        // This calc perfect
         if ($assetLastPeriodPrice > $assetStartPeriodPrice) {
             $totalAssetIncreasePercent = abs(1 - ($assetLastPeriodPrice / $assetStartPeriodPrice)) * 100;
-
-            $totalProfitAmount = ($totalInvestmentAmount / 100) * $totalAssetIncreasePercent;
-
         } else {
             $totalAssetIncreasePercent = (($assetLastPeriodPrice / $assetStartPeriodPrice) - 1) * 100;
         }
 
+        $totalProfitAmount = ($totalAccumulatedAssetQuantity * $assetLastPeriodPrice) - $totalInvestmentAmount;
+        $totalAccumulatedAssetAmount = ($totalAccumulatedAssetQuantity * $assetLastPeriodPrice);
+
+        if ($totalAccumulatedAssetAmount > $totalInvestmentAmount) {
+            $totalProfitPercent = abs(1 - ($totalAccumulatedAssetAmount / $totalInvestmentAmount)) * 100;
+        } else {
+            $totalProfitPercent = (($totalAccumulatedAssetAmount / $totalInvestmentAmount) - 1) * 100;
+        }
+
+        $totalAssetIncreaseAmount = ($assetLastPeriodPrice - $assetStartPeriodPrice);
+
         return [
-            'totalInvestmentAmount'=>$totalInvestmentAmount . '$',
-            'totalProfitPercent'=>$totalProfitPercent . '%',
-            'totalProfitAmount'=>$totalProfitAmount . '$',
+            'periodInvestments'=>$periodInvestments,
+            'totalInvestmentAmount'=>$totalInvestmentAmount,
+            'totalProfitPercent'=>$totalProfitPercent,
+            'totalProfitAmount'=>$totalProfitAmount,
+            'totalAccumulatedAssetAmount'=>$totalAccumulatedAssetAmount,
+            'totalAccumulatedAssetQuantity'=>$totalAccumulatedAssetQuantity,
             'asset'=> [
-                'assetStartPeriodPrice'=>$assetStartPeriodPrice . '$',
-                'assetLastPeriodPrice'=>$assetLastPeriodPrice . '$',
-                'totalAssetIncreasePercent'=>$totalAssetIncreasePercent . '%',
-                'totalAssetIncreaseAmount'=>$totalAssetIncreaseAmount . '$'
+                'assetStartPeriodPrice'=>$assetStartPeriodPrice,
+                'assetLastPeriodPrice'=>$assetLastPeriodPrice,
+                'totalAssetIncreasePercent'=>$totalAssetIncreasePercent,
+                'totalAssetIncreaseAmount'=>$totalAssetIncreaseAmount
             ]
         ];
     }
@@ -87,7 +83,7 @@ class DCACalculator
             foreach ($this->getDatesByMonthAndYear('10', 2021) as $date) {
                 $periods[] = [
                     'date' => $date,
-                    'assetPrice' => rand(100,999)
+                    'assetPrice' => rand(20000,60000)
                 ];
             }
         }
