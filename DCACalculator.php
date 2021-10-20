@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * @author Bozhidar Slaveykov
+ * Class DCACalculator
+ */
 
 class DCACalculator
 {
